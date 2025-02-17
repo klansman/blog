@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+<body>
+    
+      <div>
+        <br><br>
+      </div>
+      <div class="card mb-3">
+        <div class="row g-0">
+          <div class="col-md-4">
+            {% if page_user.profile_pic %}
+                <img src=" {{page_user.profile_pic.url}}" alt="Image Placeholder" class="img-fluid mb-3">
+            {% else %}
+                <img src=" {% static 'images/person_2.jpg' %}" alt="Image Placeholder" class="img-fluid mb-3">
+            {% endif %}
+            
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <h5 class="card-title">About {{page_user.first_name}} {{page_user.last_name}}</h5>
+              <p class="card-text">{{user.profile.bio}}</p>
+              {% if page_user.facebook_url %}
+                <a href="{{page_user.facebook_url}}" class="p-2"><span class="icon-facebook"></span></a>
+            {%endif%}
+            {% if page_user.twitter_url %}
+                <a href="{{page_user.twitter_url}}" class="p-2"><span class="icon-twitter"></span></a>
+            {%endif%}
+            {% if page_user.insta_url %}
+                <a href="{{page_user.insta_url}}" class="p-2"><span class="icon-instagram"></span></a>
+            {%endif%}
+            {% if page_user.linkedin_url %}
+                <a href="{{page_user.linkedin_url }}" class="p-2"><span class="icon-linkedin"></span></a>
+            {%endif%}
+
+            <!-- Allow users to edit profile information -->
+             {% if user.profile.id %}
+                <small><a href="{% url 'members:edit_profile_page' user.profile.id %}">Edit Profile</a></small>
+                {% else %}
+                <small><a href="#">Create Profile</a></small>
+             {%endif%}
+              <!-- <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p> -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+</body>
+</html>
+{% endblock %}

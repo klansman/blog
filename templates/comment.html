@@ -1,0 +1,122 @@
+{% load static %}
+
+{% if user.is_authenticated %}
+<div class="pt-2 comment-form-wrap">
+    <small><h5 class="mb-2"> Leave a Comment </h5></small> 
+      <form method="post" class="p-5 bg-light" action="{% url 'comment-sent' post.id %}">
+          {% csrf_token %}
+          {{ commentForm }}
+          <button type="submit"class="btn btn-primary sm">Post comment</button>
+      </form>
+      <br>
+    <small >{{post.comments.count}} Comments</small>
+    <hr>
+    <ul class="comment-list">
+      {% for comment in post.comments.all %}
+        <li class="comment">
+            <div class="vcard">
+                <img src=" {% static 'images/person_1.jpg' %}" alt="Image placeholder">
+            </div>
+            <div class="comment-body">
+                <h3>{{ comment.author }}</h3>
+                <div class="meta"> {{date_added}} </div>
+                <p> {{ comment.author }}: {{comment.body}} <p>
+                <a href="#" class="reply-btn" data-id="{{ comment.id }}">Reply</a> | 
+                {%if user.is_authenticated and comment.author ==  user %}
+                    <a href="{% url 'comment-delete' comment.id %}" class="delete">Delete</a>
+                {% endif %}  
+                <form method="POST" action="{% url 'add-reply' comment.id %}" class="reply-form" id="reply-form-{{ comment.id }}" style="display: none;">
+                    {% csrf_token %}
+                    {{ replyForm }}
+                <button type="submit" class="btn reply">Post Reply</button>
+                </form>
+            </p><p>Debug Comment ID: {{ comment.id }}</p>
+            
+            {% for reply in post.comment.replies.all %}
+            <div class="reply" id="reply-{{ reply.id }}">
+                <p>{{ reply.author }}</p>
+                <p>{{ reply.body }}</p> 
+                {%if user.is_authenticated and comment.author ==  user %}
+                    <a href="#" class="delete-btn" data-id="{{ reply.id }}">Delete</a>
+                {% endif %} 
+                <form method="POST" action="#" class="delete-form" id="delete-form-{{ reply.id }}" style="display: none;">
+                    {% csrf_token %}
+                <button class="delete-reply-btn" data-id="{{ reply.id }}">Delete</button>
+                </form>
+            </div>
+            <p>Debug Reply ID: {{ reply.id }}</p>
+
+            {% endfor %}
+          </div>
+          
+        </li>
+      {% empty %}
+        <p>Be the first to Comment.</p>
+      {%endfor%}
+    </ul>
+  </div>
+  {% else %}
+  <a href="{% url 'login' %}"><small>Login to Make a Comment</small></a>
+  {% endif %}
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const replyButtons = document.querySelectorAll('.reply-btn'); // Select all "Reply" links
+        replyButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent the default action of the link (navigating to "#")
+                const formId = `reply-form-${this.dataset.id}`; // Get the ID of the form
+                const form = document.getElementById(formId); // Locate the form element
+                if (form.style.display === "none") {
+                    form.style.display = "block"; // Show the form
+                } else {
+                    form.style.display = "none"; // Hide the form
+                }
+            });
+        });
+});
+console.log(`Form ID: ${formId}`);
+console.log(form); // Check if the form is found
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const deleteButtons = document.querySelectorAll(".delete-reply-btn");
+
+    deleteButtons.forEach((button) => {
+        button.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const replyId = this.dataset.id; // Get the reply ID from the button
+            const replyElement = document.getElementById(`reply-${replyId}`); // Target the reply div
+
+            // Send the AJAX request
+            fetch(`/reply_delete/${replyId}/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value,
+                    "Content-Type": "application/json",
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        // Remove the reply from the DOM
+                        replyElement.remove();
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    alert("An error occurred while deleting the reply.");
+                });
+        });
+    });
+});
+
+</script>
+  
+
+  
